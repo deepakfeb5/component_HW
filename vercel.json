@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/mouser.py", "use": "@vercel/python" },
+    { "src": "web/package.json", "use": "@vercel/next" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "api/mouser.py" },
+    { "src": "/(.*)", "dest": "web/$1" }
+  ]
+}
