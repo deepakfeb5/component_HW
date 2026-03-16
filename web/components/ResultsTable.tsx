@@ -8,12 +8,15 @@ export default function ResultsTable({ rows }: { rows: any[] }) {
 
   function fmtPrice(price: any) {
     if (!price || price === "None") return "None";
-    return `$${parseFloat(price).toLocaleString("en-US")}`;
+    const num = typeof price === "number" ? price : parseFloat(String(price).replace(/[$,]/g, ""));
+    if (Number.isNaN(num)) return String(price);
+    return `$${num.toLocaleString("en-US")}`;
   }
 
   function fmtNumber(num: any) {
     if (num === null || num === undefined || num === "None") return "None";
-    return Number(num).toLocaleString("en-US");
+    const n = Number(num);
+    return Number.isNaN(n) ? String(num) : n.toLocaleString("en-US");
   }
 
   return (
@@ -47,19 +50,9 @@ export default function ResultsTable({ rows }: { rows: any[] }) {
             <td style={td}>{fmt(r.Manufacturer)}</td>
             <td style={td}>{fmt(r.Lifecycle)}</td>
             <td style={td}>{fmt(r.Stock)}</td>
-
             <td style={td}>{fmtPrice(r.UnitPrice)}</td>
-
-            <td style={td}>
-              {r.TotalPrice ? '$${fmtNumber(r.TotalPrice)}' : "None"}
-            </td>
-
-            <td style={td}>
-              {r.Alternates && r.Alternates.length > 0
-                ? r.Alternates.join(", ")
-                : "None"}
-            </td>
-
+            <td style={td}>{r.TotalPrice != null ? fmtNumber(r.TotalPrice) : "None"}</td>
+            <td style={td}>{r.Alternates && r.Alternates.length ? r.Alternates.join(", ") : "None"}</td>
             <td style={td}>{fmt(r.Error)}</td>
           </tr>
         ))}
@@ -68,12 +61,13 @@ export default function ResultsTable({ rows }: { rows: any[] }) {
   );
 }
 
-const th = {
+const th: React.CSSProperties = {
   padding: "10px 8px",
   fontWeight: 600,
   borderBottom: "2px solid #ddd",
 };
 
-const td = {
+const td: React.CSSProperties = {
   padding: "8px 6px",
 };
+``
