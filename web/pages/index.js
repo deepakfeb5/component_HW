@@ -14,7 +14,7 @@ export default function Home() {
 
     const res = await fetch("/api/mouser", {
       method: "POST",
-      body: form
+      body: form,
     });
 
     const data = await res.json();
@@ -26,11 +26,13 @@ export default function Home() {
     if (sortConfig.key === key && sortConfig.direction === "asc") {
       direction = "desc";
     }
+
     const sorted = [...items].sort((a, b) => {
       if (a[key] < b[key]) return direction === "asc" ? -1 : 1;
       if (a[key] > b[key]) return direction === "asc" ? 1 : -1;
       return 0;
     });
+
     setItems(sorted);
     setSortConfig({ key, direction });
   }
@@ -39,32 +41,30 @@ export default function Home() {
     JSON.stringify(item).toLowerCase().includes(filterText.toLowerCase())
   );
 
-  async function exportCSV() {
-    // Dynamic import only when needed (client-side)
-    const { saveAs } = await import("file-saver");
-
+  // CSV Export (pure browser, no libraries)
+  function exportCSV() {
     const header = ["Part Number", "Qty", "Price", "Total"];
-    const rows = filteredItems.map((i) => [i.part, i.qty, i.price, i.total]);
-    const csv = [header, ...rows].map((r) => r.join(",")).join("\n");
+    const rows = filteredItems.map((item) => [
+      item.part,
+      item.qty,
+      item.price,
+      item.total,
+    ]);
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    saveAs(blob, "mouser_bom.csv");
-  }
+    const csvContent =
+      [header, ...rows].map((row) => row.join(",")).join("\n");
 
-  async function exportExcel() {
-    // Dynamic imports for browser-only usage
-    const XLSX = await import("xlsx");
-    const { saveAs } = await import("file-saver");
-
-    const worksheet = XLSX.utils.json_to_sheet(filteredItems);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "BOM");
-
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    const blob = new Blob([excelBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
     });
-    saveAs(blob, "mouser_bom.xlsx");
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "mouser_bom.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   return (
@@ -74,7 +74,7 @@ export default function Home() {
       {/* File Upload */}
       <input type="file" accept=".csv" onChange={handleUpload} />
 
-      {/* Filter/Search Box */}
+      {/* Filter Box */}
       <div style={{ marginTop: 20 }}>
         <input
           type="text"
@@ -85,13 +85,10 @@ export default function Home() {
         />
       </div>
 
-      {/* Export Buttons */}
-      {items.length > 0 && (
+      {/* Export CSV */}
+      {filteredItems.length > 0 && (
         <div style={{ marginTop: 20 }}>
-          <button onClick={exportCSV} style={{ marginRight: 10 }}>
-            Export CSV
-          </button>
-          <button onClick={exportExcel}>Export Excel (.xlsx)</button>
+          <button onClick={exportCSV}>Export CSV</button>
         </div>
       )}
 
@@ -110,14 +107,21 @@ export default function Home() {
               <th onClick={() => sortBy("qty")} style={{ cursor: "pointer" }}>
                 Qty {sortConfig.key === "qty" ? "↕" : ""}
               </th>
-              <th onClick={() => sortBy("price")} style={{ cursor: "pointer" }}>
+              <th
+                onClick={() => sortBy("price")}
+                style={{ cursor: "pointer" }}
+              >
                 Price {sortConfig.key === "price" ? "↕" : ""}
               </th>
-              <th onClick={() => sortBy("total")} style={{ cursor: "pointer" }}>
+              <th
+                onClick={() => sortBy("total")}
+                style={{ cursor: "pointer" }}
+              >
                 Total {sortConfig.key === "total" ? "↕" : ""}
               </th>
             </tr>
           </thead>
+
           <tbody>
             {filteredItems.map((item, idx) => (
               <tr key={idx}>
