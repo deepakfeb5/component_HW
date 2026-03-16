@@ -51,7 +51,7 @@ export default function ResultsTable({ rows }: { rows: any[] }) {
             <td style={td}>{fmtPrice(r.UnitPrice)}</td>
 
             <td style={td}>
-              {r.TotalPrice ? fmtNumber(r.TotalPrice) : "None"}
+              {r.TotalPrice ? '$${fmtNumber(r.TotalPrice)}' : "None"}
             </td>
 
             <td style={td}>
