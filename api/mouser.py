@@ -1,24 +1,27 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
 import pandas as pd
-import io, os, requests
+import io
 
 app = FastAPI()
 
 @app.post("/api/mouser")
 async def mouser_bom(file: UploadFile = File(...)):
-    # Read CSV: expect columns PartNumber,Quantity
     data = await file.read()
     df = pd.read_csv(io.BytesIO(data))
 
-    # TODO: Replace with real Mouser API integration
+    # Placeholder pricing (replace with real Mouser API lookup)
     items = []
     for _, row in df.iterrows():
+        qty = int(row["Quantity"])
+        unit_price = 1.23
+        total = round(qty * unit_price, 2)
+
         items.append({
-            "part": str(row["PartNumber"]),
-            "qty": int(row["Quantity"]),
-            "price": 1.23,                       # placeholder
-            "total": round(1.23 * int(row["Quantity"]), 2)
+            "part": row["PartNumber"],
+            "qty": qty,
+            "price": unit_price,
+            "total": total
         })
 
     return JSONResponse({"items": items})
