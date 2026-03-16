@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export default function Home() {
-  const [result, setResult] = useState("");
+  const [items, setItems] = useState([]);
 
   async function handleUpload(event) {
     const file = event.target.files[0];
@@ -10,14 +10,13 @@ export default function Home() {
     const form = new FormData();
     form.append("file", file);
 
-    // When hosted on Vercel, /api/mouser calls your FastAPI backend
     const res = await fetch("/api/mouser", {
       method: "POST",
       body: form
     });
 
     const data = await res.json();
-    setResult(JSON.stringify(data, null, 2));
+    setItems(data.items || []);
   }
 
   return (
@@ -26,17 +25,33 @@ export default function Home() {
 
       <input type="file" accept=".csv" onChange={handleUpload} />
 
-      <h3>Result:</h3>
-      <pre
-        style={{
-          marginTop: 10,
-          padding: 10,
-          background: "#f4f4f4",
-          whiteSpace: "pre-wrap"
-        }}
-      >
-        {result}
-      </pre>
+      {items.length > 0 && (
+        <table
+          border="1"
+          cellPadding="8"
+          style={{ marginTop: 20, borderCollapse: "collapse" }}
+        >
+          <thead>
+            <tr>
+              <th>Part Number</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {items.map((item, idx) => (
+              <tr key={idx}>
+                <td>{item.part}</td>
+                <td>{item.qty}</td>
+                <td>${item.price.toFixed(2)}</td>
+                <td>${item.total.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
