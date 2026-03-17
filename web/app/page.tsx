@@ -8,7 +8,7 @@ export default function Home() {
   const [totalCost, setTotalCost] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function handleUpload(e: any) {
+  async function uploadCsv(e: any) {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -19,7 +19,7 @@ export default function Home() {
 
     const res = await fetch("/api/process", {
       method: "POST",
-      body: form,
+      body: form
     });
 
     const data = await res.json();
@@ -31,9 +31,9 @@ export default function Home() {
 
   return (
     <div>
-      <h1>Mouser BOM Tool</h1>
+      <h1>Mouser BOM Processor</h1>
 
-      <input type="file" accept=".csv" onChange={handleUpload} />
+      <input type="file" accept=".csv" onChange={uploadCsv} />
 
       {loading && <p>Processing…</p>}
 
